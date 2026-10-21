@@ -1,0 +1,244 @@
+{
+  "name": "flutter-network-inspector",
+  "displayName": "Flutter Network Inspector",
+  "description": "Fast, lightweight in-editor HTTP/HTTPS network inspector for Flutter and Dart apps, supporting Dio, dart:io, and VM Service HTTP profiling.",
+  "version": "1.0.1",
+  "publisher": "VroyCLe",
+  "author": {
+    "name": "Vaibhav Ghadge",
+    "url": "https://www.linkedin.com/in/vaibhav-ghadge-315841168/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vroycle11/flutter_network_inspector"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "flutter",
+    "dart",
+    "network",
+    "inspector",
+    "dio",
+    "http",
+    "devtools",
+    "rest",
+    "api"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:flutterNetworkInspector.view",
+    "onCommand:flutter-network-inspector.openInspector",
+    "onCommand:flutter-network-inspector.focusView",
+    "onCommand:flutter-network-inspector.connect"
+  ],
+  "main": "./dist/extension.js",
+  "icon": "media/icon.png",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "flutter-network-inspector-container",
+          "title": "Flutter Network Inspector",
+          "icon": "media/network-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "flutter-network-inspector-container": [
+        {
+          "type": "webview",
+          "id": "flutterNetworkInspector.view",
+          "name": "Requests",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "flutter-network-inspector.openInspector",
+        "title": "Flutter Network Inspector: Open Inspector Panel",
+        "icon": "$(layout-sidebar-right)"
+      },
+      {
+        "command": "flutter-network-inspector.focusView",
+        "title": "Flutter Network Inspector: Focus Sidebar View",
+        "icon": "$(layout-sidebar-left)"
+      },
+      {
+        "command": "flutter-network-inspector.connect",
+        "title": "Flutter Network Inspector: Connect to VM Service",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "flutter-network-inspector.disconnect",
+        "title": "Flutter Network Inspector: Disconnect",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "flutter-network-inspector.clearHistory",
+        "title": "Flutter Network Inspector: Clear History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "flutter-network-inspector.pauseCapture",
+        "title": "Flutter Network Inspector: Pause Capture",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "flutter-network-inspector.resumeCapture",
+        "title": "Flutter Network Inspector: Resume Capture",
+        "icon": "$(debug-continue)"
+      },
+      {
+        "command": "flutter-network-inspector.exportSession",
+        "title": "Flutter Network Inspector: Export Session (HAR/JSON)",
+        "icon": "$(export)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "flutter-network-inspector.openInspector",
+          "when": "view == flutterNetworkInspector.view",
+          "group": "navigation@1"
+        },
+        {
+          "command": "flutter-network-inspector.pauseCapture",
+          "when": "view == flutterNetworkInspector.view && !flutterNetworkInspector.isPaused",
+          "group": "navigation@2"
+        },
+        {
+          "command": "flutter-network-inspector.resumeCapture",
+          "when": "view == flutterNetworkInspector.view && flutterNetworkInspector.isPaused",
+          "group": "navigation@2"
+        },
+        {
+          "command": "flutter-network-inspector.clearHistory",
+          "when": "view == flutterNetworkInspector.view",
+          "group": "navigation@3"
+        },
+        {
+          "command": "flutter-network-inspector.exportSession",
+          "when": "view == flutterNetworkInspector.view",
+          "group": "navigation@4"
+        },
+        {
+          "command": "flutter-network-inspector.connect",
+          "when": "view == flutterNetworkInspector.view && !flutterNetworkInspector.isConnected",
+          "group": "navigation@5"
+        },
+        {
+          "command": "flutter-network-inspector.disconnect",
+          "when": "view == flutterNetworkInspector.view && flutterNetworkInspector.isConnected",
+          "group": "navigation@5"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Flutter Network Inspector",
+      "properties": {
+        "flutterNetworkInspector.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically connect to running Flutter debug sessions."
+        },
+        "flutterNetworkInspector.pollingIntervalMs": {
+          "type": "number",
+          "default": 400,
+          "minimum": 100,
+          "maximum": 5000,
+          "description": "Polling interval in milliseconds for VM Service HTTP profiling."
+        },
+        "flutterNetworkInspector.maxRequests": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 50,
+          "maximum": 10000,
+          "description": "Maximum number of network requests retained in memory."
+        },
+        "flutterNetworkInspector.maxBodySizeBytes": {
+          "type": "number",
+          "default": 524288,
+          "minimum": 1024,
+          "maximum": 10485760,
+          "description": "Maximum in-memory size per request or response body in bytes (default 512KB)."
+        },
+        "flutterNetworkInspector.maxTotalBodyBudgetMB": {
+          "type": "number",
+          "default": 20,
+          "minimum": 5,
+          "maximum": 200,
+          "description": "Total body memory budget in megabytes before evicting bodies of older requests."
+        },
+        "flutterNetworkInspector.sensitiveHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "authorization",
+            "proxy-authorization",
+            "cookie",
+            "set-cookie",
+            "x-api-key",
+            "x-auth-token"
+          ],
+          "description": "List of header names to automatically redact in UI and exports."
+        },
+        "flutterNetworkInspector.sensitiveQueryParams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "token",
+            "access_token",
+            "api_key",
+            "apikey",
+            "secret",
+            "password",
+            "key",
+            "auth",
+            "signature",
+            "bearer"
+          ],
+          "description": "List of URL query parameter names to automatically redact in UI and exports."
+        },
+        "flutterNetworkInspector.debugLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose extension diagnostic logging to the Output Channel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "test": "npm run compile && mocha dist/test/**/*.test.js",
+    "package": "vsce package",
+    "publish:ovsx": "ovsx publish flutter-network-inspector-1.0.1.vsix",
+    "publish:vsce": "vsce publish --packagePath flutter-network-inspector-1.0.1.vsix"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.14",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.25.0",
+    "mocha": "^11.1.0",
+    "ovsx": "^1.2.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
