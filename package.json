@@ -12,6 +12,10 @@
     "type": "git",
     "url": "https://github.com/vroycle11/flutter_network_inspector"
   },
+  "bugs": {
+    "url": "https://github.com/vroycle11/flutter_network_inspector/issues"
+  },
+  "homepage": "https://github.com/vroycle11/flutter_network_inspector#readme",
   "engines": {
     "vscode": "^1.85.0"
   },

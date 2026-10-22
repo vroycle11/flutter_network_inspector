@@ -1,7 +1,7 @@
 name: flutter_network_inspector_dio
 description: Optional companion Dio interceptor for Flutter Network Inspector, capturing rich Dio metadata, form data, and custom adapter traffic.
 version: 1.0.0
-homepage: https://github.com/flutter-network-inspector
+homepage: https://github.com/vroycle11/flutter_network_inspector
 
 environment:
   sdk: ^3.0.0

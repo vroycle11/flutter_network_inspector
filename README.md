@@ -6,6 +6,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![GitHub](https://img.shields.io/badge/GitHub-flutter__network__inspector-181717?logo=github)](https://github.com/vroycle11/flutter_network_inspector)
 
 A fast, lightweight, in-editor alternative to Flutter DevTools Network Inspector for Visual Studio Code. Inspect HTTP & HTTPS traffic from your running Flutter applications (Dio and `dart:io` `HttpClient`) on Android, iOS, macOS, Windows, and Linux without switching to an external browser window.
 
