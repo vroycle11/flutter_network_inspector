@@ -2,6 +2,13 @@
 
 All notable changes to the "Flutter Network Inspector" extension will be documented in this file.
 
+## [1.0.2] - 2026-10-22
+
+### Bug Fixes
+- **Response Body Inspection**: Fixed an issue where switching between previously inspected requests would continue displaying the last clicked request's response body instead of updating to the currently selected API's data.
+- **Detail Persistence**: Ensured `RetentionManager` preserves already fetched details and bodies when summary updates arrive from background VM Service profiler polling.
+- **Webview Selection Sync**: Immediately render cached request details upon clicking a row in the virtual list and broadcast record updates when details are retrieved or already present.
+
 ## [1.0.1] - 2026-10-16
 
 ### Improvements

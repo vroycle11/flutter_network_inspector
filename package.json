@@ -2,7 +2,7 @@
   "name": "flutter-network-inspector",
   "displayName": "Flutter Network Inspector",
   "description": "Fast, lightweight in-editor HTTP/HTTPS network inspector for Flutter and Dart apps, supporting Dio, dart:io, and VM Service HTTP profiling.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "VroyCLe",
   "author": {
     "name": "Vaibhav Ghadge",
@@ -228,8 +228,8 @@
     "watch": "node esbuild.js --watch",
     "test": "npm run compile && mocha dist/test/**/*.test.js",
     "package": "vsce package",
-    "publish:ovsx": "ovsx publish flutter-network-inspector-1.0.1.vsix",
-    "publish:vsce": "vsce publish --packagePath flutter-network-inspector-1.0.1.vsix"
+    "publish:ovsx": "ovsx publish flutter-network-inspector-1.0.2.vsix",
+    "publish:vsce": "vsce publish --packagePath flutter-network-inspector-1.0.2.vsix"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

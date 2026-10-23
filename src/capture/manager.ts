@@ -103,22 +103,26 @@ export class CaptureManager extends EventEmitter implements vscode.Disposable {
     const existing = this.retention.get(id);
     if (!existing) return undefined;
 
-    // If details already loaded, return existing
-    if (existing.hasDetails) return existing;
+    // If details already loaded, broadcast immediately so all webviews update their active selection
+    if (existing.hasDetails) {
+      this.broadcastRecordUpdate(existing);
+      return existing;
+    }
 
     // Fetch from VM Service
     if (this.client.isConnected && existing.source === 'vm_service') {
       try {
         const rawDetail = await this.profiler.getRequestDetail(id, existing.isolateId);
         const detailed = this.normalizer.normalizeDetail(existing, rawDetail);
-        this.retention.addOrUpdate(detailed);
-        this.broadcastRecordUpdate(detailed);
-        return detailed;
+        const stored = this.retention.addOrUpdate(detailed);
+        this.broadcastRecordUpdate(stored);
+        return stored;
       } catch (err: any) {
         this.log(`Failed to fetch detail for request ${id}: ${err.message}`);
       }
     }
 
+    this.broadcastRecordUpdate(existing);
     return existing;
   }
 
@@ -360,6 +364,7 @@ export class CaptureManager extends EventEmitter implements vscode.Disposable {
       ...record,
       requestBody: undefined,
       responseBody: undefined,
+      hasDetails: false,
     };
   }
 

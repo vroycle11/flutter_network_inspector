@@ -141,6 +141,7 @@ describe('End-to-End Real Dart VM & Dio Network Capture Test', function () {
     // Fetch on-demand detail with body
     const rawDetail = await profiler.getRequestDetail(req.id, req.isolateId);
     const detailed = normalizer.normalizeDetail(req, rawDetail);
+    retention.addOrUpdate(detailed);
     assert.strictEqual(detailed.hasDetails, true);
     assert.ok(detailed.responseBody?.includes('Alice'), 'Response body should contain Alice');
     assert.ok(detailed.responseBody?.includes('Bob'), 'Response body should contain Bob');
@@ -162,10 +163,28 @@ describe('End-to-End Real Dart VM & Dio Network Capture Test', function () {
     // Fetch on-demand detail with request and response bodies
     const rawDetail = await profiler.getRequestDetail(req.id, req.isolateId);
     const detailed = normalizer.normalizeDetail(req, rawDetail);
+    retention.addOrUpdate(detailed);
     assert.strictEqual(detailed.hasDetails, true);
     assert.ok(detailed.requestBody?.includes('Alice'), 'Request body should contain payload Alice');
     assert.ok(detailed.requestBody?.includes('my_raw_password_xyz'), 'Request body should contain raw password before redaction');
     assert.ok(detailed.responseBody?.includes('users'), 'Response body should contain users');
+  });
+
+  it('2b. Preserves distinct response bodies when inspecting and switching between multiple requests', () => {
+    const getRecords = Array.from(capturedRecords.values()).filter((r) => r.method === 'GET' && r.uri.includes('/api/users'));
+    const postRecords = Array.from(capturedRecords.values()).filter((r) => r.method === 'POST' && r.uri.includes('/api/users'));
+
+    const getReq = getRecords[0];
+    const postReq = postRecords[0];
+
+    const storedGet = retention.get(getReq.id);
+    const storedPost = retention.get(postReq.id);
+
+    assert.ok(storedGet?.hasDetails, 'GET request must have details');
+    assert.ok(storedPost?.hasDetails, 'POST request must have details');
+    assert.ok(storedGet?.responseBody?.includes('Alice'), 'GET request must maintain Alice in response body');
+    assert.ok(storedPost?.responseBody?.includes('users'), 'POST request must maintain users in response body');
+    assert.notStrictEqual(storedGet?.responseBody, storedPost?.responseBody, 'Response bodies must be distinct');
   });
 
   it('3. Captures real HTTP 404 response with status and state', async () => {

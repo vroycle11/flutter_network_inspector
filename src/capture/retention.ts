@@ -38,8 +38,28 @@ export class RetentionManager {
   }
 
   public addOrUpdate(record: NetworkRecord): NetworkRecord {
-    if (this.records.has(record.id)) {
+    const existing = this.records.get(record.id);
+    if (existing) {
       this.subtractBodySize(record.id);
+      // Preserve already loaded details and bodies if incoming update is a summary
+      if (existing.hasDetails && !record.hasDetails) {
+        record = {
+          ...record,
+          requestBody: existing.requestBody,
+          responseBody: existing.responseBody,
+          isRequestBodyTruncated: existing.isRequestBodyTruncated,
+          isResponseBodyTruncated: existing.isResponseBodyTruncated,
+          hasDetails: true,
+          requestHeaders: (record.requestHeaders && Object.keys(record.requestHeaders).length > 0)
+            ? record.requestHeaders
+            : existing.requestHeaders,
+          responseHeaders: (record.responseHeaders && Object.keys(record.responseHeaders).length > 0)
+            ? record.responseHeaders
+            : existing.responseHeaders,
+          requestSize: record.requestSize || existing.requestSize,
+          responseSize: record.responseSize || existing.responseSize,
+        };
+      }
     }
 
     this.records.set(record.id, record);

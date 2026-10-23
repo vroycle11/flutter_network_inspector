@@ -599,6 +599,11 @@ export function getInspectorHtml(nonce: string): string {
       selectedRecordId = id;
       renderVirtualList();
 
+      const cached = allRecords.find(r => r.id === id);
+      if (cached) {
+        renderDetail(cached);
+      }
+
       vscode.postMessage({
         type: 'selectRecord',
         id: id,
@@ -694,6 +699,10 @@ export function getInspectorHtml(nonce: string): string {
 
     function renderBodyTab(body, isTruncated, title) {
       if (body === undefined || body === null) {
+        if (selectedRecord && !selectedRecord.hasDetails) {
+          detailContent.innerHTML = '<div class="empty-state"><p>Loading ' + escapeHtml(title) + '...</p><p style="font-size:10px; color:#888;">Fetching from Dart VM Service...</p></div>';
+          return;
+        }
         detailContent.innerHTML = '<div class="empty-state"><p>Not available from capture source.</p><p style="font-size:10px;">Select the request or use the companion Dio package if custom adapters are active.</p></div>';
         return;
       }
@@ -808,8 +817,9 @@ export function getInspectorHtml(nonce: string): string {
       detailTabs.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       activeTab = tab.getAttribute('data-tab');
-      if (selectedRecord) {
-        renderDetail(selectedRecord);
+      const rec = (selectedRecordId && allRecords.find(r => r.id === selectedRecordId)) || selectedRecord;
+      if (rec) {
+        renderDetail(rec);
       }
     });
 
@@ -903,26 +913,30 @@ export function getInspectorHtml(nonce: string): string {
     });
 
     btnCopyUrl.addEventListener('click', () => {
-      if (selectedRecord) {
-        vscode.postMessage({ type: 'copy', text: selectedRecord.uri, label: 'URL' });
+      const rec = (selectedRecordId && allRecords.find(r => r.id === selectedRecordId)) || selectedRecord;
+      if (rec) {
+        vscode.postMessage({ type: 'copy', text: rec.uri, label: 'URL' });
       }
     });
 
     btnCopyCurl.addEventListener('click', () => {
-      if (selectedRecord) {
-        vscode.postMessage({ type: 'copyCurl', id: selectedRecord.id });
+      const rec = (selectedRecordId && allRecords.find(r => r.id === selectedRecordId)) || selectedRecord;
+      if (rec) {
+        vscode.postMessage({ type: 'copyCurl', id: rec.id });
       }
     });
 
     btnCopyReq.addEventListener('click', () => {
-      if (selectedRecord && selectedRecord.requestBody) {
-        vscode.postMessage({ type: 'copy', text: selectedRecord.requestBody, label: 'Request Body' });
+      const rec = (selectedRecordId && allRecords.find(r => r.id === selectedRecordId)) || selectedRecord;
+      if (rec && rec.requestBody) {
+        vscode.postMessage({ type: 'copy', text: rec.requestBody, label: 'Request Body' });
       }
     });
 
     btnCopyResp.addEventListener('click', () => {
-      if (selectedRecord && selectedRecord.responseBody) {
-        vscode.postMessage({ type: 'copy', text: selectedRecord.responseBody, label: 'Response Body' });
+      const rec = (selectedRecordId && allRecords.find(r => r.id === selectedRecordId)) || selectedRecord;
+      if (rec && rec.responseBody) {
+        vscode.postMessage({ type: 'copy', text: rec.responseBody, label: 'Response Body' });
       }
     });
 
@@ -934,17 +948,44 @@ export function getInspectorHtml(nonce: string): string {
       switch (msg.type) {
         case 'initialState':
           allRecords = msg.records || [];
+          if (selectedRecordId) {
+            const found = allRecords.find(r => r.id === selectedRecordId);
+            if (found) {
+              renderDetail(found);
+            }
+          }
           applyFilter();
           updateStateUI(msg.state);
           break;
 
         case 'recordsBatch':
-          // Merge or append batch
+          // Merge or append batch while preserving already loaded bodies and details
           const existingMap = new Map(allRecords.map(r => [r.id, r]));
           for (const newRec of msg.records) {
-            existingMap.set(newRec.id, newRec);
+            const oldRec = existingMap.get(newRec.id);
+            if (oldRec && (oldRec.hasDetails || oldRec.responseBody !== undefined || oldRec.requestBody !== undefined)) {
+              existingMap.set(newRec.id, {
+                ...newRec,
+                requestBody: oldRec.requestBody,
+                responseBody: oldRec.responseBody,
+                isRequestBodyTruncated: oldRec.isRequestBodyTruncated,
+                isResponseBodyTruncated: oldRec.isResponseBodyTruncated,
+                hasDetails: oldRec.hasDetails,
+              });
+            } else {
+              existingMap.set(newRec.id, newRec);
+            }
           }
           allRecords = Array.from(existingMap.values());
+          if (selectedRecordId) {
+            const currentSelected = existingMap.get(selectedRecordId);
+            if (currentSelected) {
+              selectedRecord = currentSelected;
+              if (activeTab === 'overview' || activeTab === 'timing') {
+                renderDetail(selectedRecord);
+              }
+            }
+          }
           applyFilter();
           break;
 
@@ -956,6 +997,7 @@ export function getInspectorHtml(nonce: string): string {
             allRecords.push(msg.record);
           }
           if (selectedRecordId === msg.record.id) {
+            selectedRecord = msg.record;
             renderDetail(msg.record);
           }
           applyFilter();
